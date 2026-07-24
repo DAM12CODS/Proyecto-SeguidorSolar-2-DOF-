@@ -172,7 +172,10 @@ class SolarDashboard(ctk.CTk):
                                                       pady=(10, 0),
                                                       sticky="w")
         self.date_entry = ctk.CTkEntry(self.sidebar)
-        self.date_entry.insert(0, datetime.now().strftime("%Y-%m-%d"))
+        self.date_entry.insert(
+            0,
+            datetime.now(timezone("America/Guayaquil")).strftime("%Y-%m-%d"),
+        )
         self.date_entry.grid(row=2,
                              column=0,
                              padx=20,
@@ -209,18 +212,22 @@ class SolarDashboard(ctk.CTk):
         self.control_frame = ctk.CTkFrame(self.sidebar, fg_color="transparent")
         self.control_frame.grid(row=7, column=0, padx=20, pady=20, sticky="ew")
 
-        self.btn_simulate = ctk.CTkButton(self.control_frame,
-                                          text="▶ Iniciar Render",
-                                          command=self.toggle_simulation,
-                                          fg_color="#10b981",
-                                          hover_color="#059669")
+        self.btn_simulate = ctk.CTkButton(
+            self.control_frame,
+            text="▶ Iniciar Render",
+            command=self.toggle_simulation,
+            fg_color="#10b981",
+            hover_color="#059669",
+        )
         self.btn_simulate.pack(fill="x", pady=5)
 
-        self.btn_reset = ctk.CTkButton(self.control_frame,
-                                       text="⏹ Reiniciar",
-                                       command=self.reset_simulation,
-                                       fg_color="#ef4444",
-                                       hover_color="#dc2626")
+        self.btn_reset = ctk.CTkButton(
+            self.control_frame,
+            text="⏹ Reiniciar",
+            command=self.reset_simulation,
+            fg_color="#ef4444",
+            hover_color="#dc2626",
+        )
         self.btn_reset.pack(fill="x", pady=5)
 
         ctk.CTkLabel(self.control_frame, text="Velocidad:").pack(anchor="w",
@@ -267,16 +274,16 @@ class SolarDashboard(ctk.CTk):
         self.plot_frame = ctk.CTkFrame(self.main_area, corner_radius=15)
         self.plot_frame.grid(row=1, column=0, sticky="nsew")
 
-        plt.style.use('dark_background')
+        plt.style.use("dark_background")
         # Figura principal dividida (3D a la izquierda, 2D a la derecha)
         self.fig = plt.figure(figsize=(12, 6), facecolor="#242424")
-        self.ax_3d = self.fig.add_subplot(1, 2, 1, projection='3d')
+        self.ax_3d = self.fig.add_subplot(1, 2, 1, projection="3d")
         self.ax_pitch = self.fig.add_subplot(2, 2, 2)
         self.ax_roll = self.fig.add_subplot(2, 2, 4)
 
-        self.ax_3d.set_facecolor('#242424')
-        self.ax_pitch.set_facecolor('#1e1e1e')
-        self.ax_roll.set_facecolor('#1e1e1e')
+        self.ax_3d.set_facecolor("#242424")
+        self.ax_pitch.set_facecolor("#1e1e1e")
+        self.ax_roll.set_facecolor("#1e1e1e")
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.plot_frame)
         self.canvas.get_tk_widget().pack(fill="both",
@@ -287,14 +294,18 @@ class SolarDashboard(ctk.CTk):
     def create_kpi_card(self, parent, col, title, initial_val):
         card = ctk.CTkFrame(parent, corner_radius=10, fg_color="#2b2b2b")
         card.grid(row=0, column=col, padx=5, sticky="ew")
-        ctk.CTkLabel(card,
-                     text=title,
-                     font=ctk.CTkFont(size=11, weight="bold"),
-                     text_color="#9ca3af").pack(pady=(10, 0))
-        val_label = ctk.CTkLabel(card,
-                                 text=initial_val,
-                                 font=ctk.CTkFont(size=24, weight="bold"),
-                                 text_color="#38bdf8")
+        ctk.CTkLabel(
+            card,
+            text=title,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#9ca3af",
+        ).pack(pady=(10, 0))
+        val_label = ctk.CTkLabel(
+            card,
+            text=initial_val,
+            font=ctk.CTkFont(size=24, weight="bold"),
+            text_color="#38bdf8",
+        )
         val_label.pack(pady=(0, 10))
         return val_label
 
@@ -313,79 +324,95 @@ class SolarDashboard(ctk.CTk):
 
         # --- BRÚJULA BASE ---
         theta = np.linspace(0, 2 * np.pi, 120)
-        self.ax_3d.plot(1.8 * np.cos(theta),
-                        1.8 * np.sin(theta),
-                        0,
-                        color='#38bdf8',
-                        alpha=0.6,
-                        linewidth=2)
+        self.ax_3d.plot(
+            1.8 * np.cos(theta),
+            1.8 * np.sin(theta),
+            0,
+            color="#38bdf8",
+            alpha=0.6,
+            linewidth=2,
+        )
 
         for r_circle in [0.6, 1.2]:
-            self.ax_3d.plot(r_circle * np.cos(theta),
-                            r_circle * np.sin(theta),
-                            0,
-                            color='#4b5563',
-                            alpha=0.5,
-                            linestyle='--')
+            self.ax_3d.plot(
+                r_circle * np.cos(theta),
+                r_circle * np.sin(theta),
+                0,
+                color="#4b5563",
+                alpha=0.5,
+                linestyle="--",
+            )
 
         self.ax_3d.plot([-1.8, 1.8], [0, 0], [0, 0],
-                        color='#4b5563',
+                        color="#4b5563",
                         alpha=0.6,
                         linewidth=1.5)
         self.ax_3d.plot([0, 0], [-1.8, 1.8], [0, 0],
-                        color='#4b5563',
+                        color="#4b5563",
                         alpha=0.6,
                         linewidth=1.5)
 
         offset = 2.0
-        self.ax_3d.text(offset,
-                        0,
-                        0,
-                        'ESTE',
-                        color='#38bdf8',
-                        fontsize=9,
-                        fontweight='bold',
-                        ha='center',
-                        va='center')
-        self.ax_3d.text(-offset,
-                        0,
-                        0,
-                        'OESTE',
-                        color='#38bdf8',
-                        fontsize=9,
-                        fontweight='bold',
-                        ha='center',
-                        va='center')
-        self.ax_3d.text(0,
-                        offset,
-                        0,
-                        'NORTE',
-                        color='#38bdf8',
-                        fontsize=9,
-                        fontweight='bold',
-                        ha='center',
-                        va='center')
-        self.ax_3d.text(0,
-                        -offset,
-                        0,
-                        'SUR',
-                        color='#38bdf8',
-                        fontsize=9,
-                        fontweight='bold',
-                        ha='center',
-                        va='center')
+        self.ax_3d.text(
+            offset,
+            0,
+            0,
+            "ESTE",
+            color="#38bdf8",
+            fontsize=9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+        )
+        self.ax_3d.text(
+            -offset,
+            0,
+            0,
+            "OESTE",
+            color="#38bdf8",
+            fontsize=9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+        )
+        self.ax_3d.text(
+            0,
+            offset,
+            0,
+            "NORTE",
+            color="#38bdf8",
+            fontsize=9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+        )
+        self.ax_3d.text(
+            0,
+            -offset,
+            0,
+            "SUR",
+            color="#38bdf8",
+            fontsize=9,
+            fontweight="bold",
+            ha="center",
+            va="center",
+        )
 
         # HUD en 3D
-        self.hud_text = self.ax_3d.text2D(0.02,
-                                          0.95,
-                                          "",
-                                          transform=self.ax_3d.transAxes,
-                                          fontsize=9,
-                                          bbox=dict(boxstyle='round',
-                                                    facecolor='black',
-                                                    alpha=0.6),
-                                          color='white',
-                                          verticalalignment='top')
+        self.hud_text = self.ax_3d.text2D(
+            0.02,
+            0.95,
+            "",
+            transform=self.ax_3d.transAxes,
+            fontsize=9,
+            bbox={
+                "boxstyle": "round",
+                "facecolor": "black",
+                "alpha": 0.6
+            },
+            color="white",
+            verticalalignment="top",
+        )
 
         self.canvas.draw()
 
@@ -394,8 +421,9 @@ class SolarDashboard(ctk.CTk):
             date_str = self.date_entry.get()
             time_str = self.time_entry.get()
             hrs = float(self.duration_entry.get())
-            start_dt = timezone("America/Guayaquil").localize(
-                datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M"))
+            naive_dt = datetime.strptime(f"{date_str} {time_str}",
+                                         "%Y-%m-%d %H:%M")
+            start_dt = timezone("America/Guayaquil").localize(naive_dt)
         except ValueError:
             return False
 
@@ -415,14 +443,16 @@ class SolarDashboard(ctk.CTk):
         return True
 
     def toggle_simulation(self):
-        if not hasattr(self, 'times') or len(self.times) == 0:
-            if not self.preprocess_data(): return
+        if not hasattr(self, "times") or len(self.times) == 0:
+            if not self.preprocess_data():
+                return
             self.setup_3d_environment()
 
         if self.is_running:
             self.is_running = False
             self.btn_simulate.configure(text="▶ Reanudar", fg_color="#10b981")
-            if self.animation: self.after_cancel(self.animation)
+            if self.animation:
+                self.after_cancel(self.animation)
         else:
             self.is_running = True
             self.btn_simulate.configure(text="⏸ Pausar",
@@ -432,7 +462,8 @@ class SolarDashboard(ctk.CTk):
 
     def reset_simulation(self):
         self.is_running = False
-        if self.animation: self.after_cancel(self.animation)
+        if self.animation:
+            self.after_cancel(self.animation)
         self.frame_index = 0
         self.progress_bar.set(0)
         self.btn_simulate.configure(text="▶ Iniciar Render",
@@ -440,8 +471,11 @@ class SolarDashboard(ctk.CTk):
         self.times = []
         self.init_plot()
         for label in [
-                self.lbl_time_val, self.lbl_el_val, self.lbl_az_val,
-                self.lbl_pitch_val, self.lbl_roll_val
+                self.lbl_time_val,
+                self.lbl_el_val,
+                self.lbl_az_val,
+                self.lbl_pitch_val,
+                self.lbl_roll_val,
         ]:
             label.configure(text="--")
 
@@ -451,99 +485,100 @@ class SolarDashboard(ctk.CTk):
 
         # Configurar Gráficas 2D de Ángulos
         hours = [t.hour + t.minute / 60.0 for t in self.times]
-        self.ax_pitch.plot(hours, self.pitches, color='#ef4444', linewidth=1.5)
-        self.ax_pitch.set_ylabel('Pitch φ (°)', fontsize=8)
+        self.ax_pitch.plot(hours, self.pitches, color="#ef4444", linewidth=1.5)
+        self.ax_pitch.set_ylabel("Pitch φ (°)", fontsize=8)
         self.ax_pitch.grid(True, alpha=0.3)
-        self.ax_pitch.set_title('Ángulo Pitch vs. Hora',
+        self.ax_pitch.set_title("Ángulo Pitch vs. Hora",
                                 fontsize=10,
-                                color='white')
+                                color="white")
 
-        self.ax_roll.plot(hours, self.rolls, color='#38bdf8', linewidth=1.5)
-        self.ax_roll.set_xlabel('Hora Local (h)', fontsize=8)
-        self.ax_roll.set_ylabel('Roll ψ (°)', fontsize=8)
+        self.ax_roll.plot(hours, self.rolls, color="#38bdf8", linewidth=1.5)
+        self.ax_roll.set_xlabel("Hora Local (h)", fontsize=8)
+        self.ax_roll.set_ylabel("Roll ψ (°)", fontsize=8)
         self.ax_roll.grid(True, alpha=0.3)
-        self.ax_roll.set_title('Ángulo Roll vs. Hora',
+        self.ax_roll.set_title("Ángulo Roll vs. Hora",
                                fontsize=10,
-                               color='white')
+                               color="white")
 
         self.line_p = self.ax_pitch.axvline(x=hours[0],
-                                            color='white',
-                                            linestyle='--',
+                                            color="white",
+                                            linestyle="--",
                                             alpha=0.8)
         self.line_r = self.ax_roll.axvline(x=hours[0],
-                                           color='white',
-                                           linestyle='--',
+                                           color="white",
+                                           linestyle="--",
                                            alpha=0.8)
 
         # Objetos 3D
         self.ax_3d.plot([0, 0], [0, 0], [0, self.pivot_z],
-                        color='#94a3b8',
+                        color="#94a3b8",
                         linewidth=6)
         self.ax_3d.plot([0], [0], [0],
-                        marker='o',
-                        color='#38bdf8',
+                        marker="o",
+                        color="#38bdf8",
                         markersize=8)
 
         polys, colors = build_detailed_panel(self.pitches[0], self.rolls[0],
                                              self.pivot_z)
         self.panel_collection = Poly3DCollection(polys,
                                                  facecolors=colors,
-                                                 edgecolors='#020617',
+                                                 edgecolors="#020617",
                                                  linewidths=0.5,
                                                  alpha=0.95)
         self.ax_3d.add_collection3d(self.panel_collection)
 
         self.shadow_collection = Poly3DCollection([],
-                                                  facecolors='#000000',
-                                                  edgecolors='none',
+                                                  facecolors="#000000",
+                                                  edgecolors="none",
                                                   alpha=0.5)
         self.ax_3d.add_collection3d(self.shadow_collection)
 
-        self.sun_glow, = self.ax_3d.plot([], [], [],
-                                         marker='o',
-                                         color='#fef08a',
-                                         markersize=40,
-                                         alpha=0.15)
-        self.sun_core, = self.ax_3d.plot([], [], [],
-                                         marker='o',
-                                         color='#fbbf24',
-                                         markersize=10)
-        self.sun_ray, = self.ax_3d.plot([], [], [],
-                                        color='#fef08a',
-                                        linestyle='--',
-                                        linewidth=1.5,
-                                        alpha=0.5)
+        (self.sun_glow, ) = self.ax_3d.plot([], [], [],
+                                            marker="o",
+                                            color="#fef08a",
+                                            markersize=40,
+                                            alpha=0.15)
+        (self.sun_core, ) = self.ax_3d.plot([], [], [],
+                                            marker="o",
+                                            color="#fbbf24",
+                                            markersize=10)
+        (self.sun_ray, ) = self.ax_3d.plot([], [], [],
+                                           color="#fef08a",
+                                           linestyle="--",
+                                           linewidth=1.5,
+                                           alpha=0.5)
 
-        self.sun_dropline, = self.ax_3d.plot([], [], [],
-                                             color='#4b5563',
-                                             linestyle=':',
-                                             alpha=0.8,
-                                             linewidth=1)
-        self.sun_ground_mark, = self.ax_3d.plot([], [], [],
-                                                marker='+',
-                                                color='#f59e0b',
-                                                markersize=8,
-                                                alpha=0.6)
+        (self.sun_dropline, ) = self.ax_3d.plot([], [], [],
+                                                color="#4b5563",
+                                                linestyle=":",
+                                                alpha=0.8,
+                                                linewidth=1)
+        (self.sun_ground_mark, ) = self.ax_3d.plot([], [], [],
+                                                   marker="+",
+                                                   color="#f59e0b",
+                                                   markersize=8,
+                                                   alpha=0.6)
 
         # Vector Normal del Panel (n̂)
         self.normal_quiver = None
 
         # Arco de Trayectoria
-        sx = 1.7 * np.cos(np.radians(self.elevations)) * np.sin(
-            np.radians(self.azimuths))
-        sy = 1.7 * np.cos(np.radians(self.elevations)) * np.cos(
-            np.radians(self.azimuths))
+        sx = (1.7 * np.cos(np.radians(self.elevations)) *
+              np.sin(np.radians(self.azimuths)))
+        sy = (1.7 * np.cos(np.radians(self.elevations)) *
+              np.cos(np.radians(self.azimuths)))
         sz = 1.7 * np.sin(np.radians(self.elevations))
         valid = sz > 0
         self.ax_3d.plot(sx[valid],
                         sy[valid],
                         sz[valid],
-                        color='#fbbf24',
+                        color="#fbbf24",
                         alpha=0.2,
                         linewidth=2)
 
     def animate(self):
-        if not self.is_running: return
+        if not self.is_running:
+            return
         if self.frame_index >= len(self.times):
             self.is_running = False
             self.btn_simulate.configure(text="▶ Iniciar Render",
@@ -604,24 +639,29 @@ class SolarDashboard(ctk.CTk):
                 self.normal_quiver.remove()
 
             pitch_r, roll_r = np.radians(pitch), np.radians(roll)
-            Rx = np.array([[1, 0, 0], [0, np.cos(pitch_r), -np.sin(pitch_r)],
-                           [0, np.sin(pitch_r),
-                            np.cos(pitch_r)]])
-            Ry = np.array([[np.cos(roll_r), 0,
-                            np.sin(roll_r)], [0, 1, 0],
-                           [-np.sin(roll_r), 0,
-                            np.cos(roll_r)]])
+            Rx = np.array([
+                [1, 0, 0],
+                [0, np.cos(pitch_r), -np.sin(pitch_r)],
+                [0, np.sin(pitch_r), np.cos(pitch_r)],
+            ])
+            Ry = np.array([
+                [np.cos(roll_r), 0, np.sin(roll_r)],
+                [0, 1, 0],
+                [-np.sin(roll_r), 0, np.cos(roll_r)],
+            ])
             n_vec = Ry @ Rx @ np.array([0, 0, 1])
 
-            self.normal_quiver = self.ax_3d.quiver(0,
-                                                   0,
-                                                   self.pivot_z,
-                                                   n_vec[0] * 0.8,
-                                                   n_vec[1] * 0.8,
-                                                   n_vec[2] * 0.8,
-                                                   color='#06b6d4',
-                                                   linewidth=2,
-                                                   arrow_length_ratio=0.25)
+            self.normal_quiver = self.ax_3d.quiver(
+                0,
+                0,
+                self.pivot_z,
+                n_vec[0] * 0.8,
+                n_vec[1] * 0.8,
+                n_vec[2] * 0.8,
+                color="#06b6d4",
+                linewidth=2,
+                arrow_length_ratio=0.25,
+            )
 
             # HUD 3D
             self.hud_text.set_text(
