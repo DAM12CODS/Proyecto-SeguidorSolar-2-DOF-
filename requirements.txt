@@ -1,0 +1,5 @@
+numpy
+matplotlib
+customtkinter
+pysolar
+pytz

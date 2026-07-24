@@ -1,10 +1,11 @@
-import numpy as np
+from datetime import datetime, timedelta
+
+import customtkinter as ctk
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import customtkinter as ctk
 from pysolar.solar import get_altitude, get_azimuth
-from datetime import datetime, timedelta
 from pytz import timezone
 
 # Configuración global de la UI
