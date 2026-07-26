@@ -47,7 +47,6 @@ def build_detailed_panel(pitch_deg, roll_deg, pivot_z=0.8, thickness=0.025):
     polygons, colors = [], []
 
     # 1. CARA POSTERIOR / TRASERA (Color gris oscuro / negro metálico)
-    # Se coloca en la parte inferior del panel (z = -thickness)
     back_face = np.array([
         [-height / 2, -width / 2, -thickness],
         [height / 2, -width / 2, -thickness],
@@ -55,7 +54,7 @@ def build_detailed_panel(pitch_deg, roll_deg, pivot_z=0.8, thickness=0.025):
         [-height / 2, width / 2, -thickness],
     ])
     polygons.append(back_face)
-    colors.append("#1e293b")  # Gris oscuro mate para el reverso
+    colors.append("#1e293b")
 
     # 2. MARCO ESTRUCTURAL (Frontal)
     frame = np.array([
@@ -65,7 +64,7 @@ def build_detailed_panel(pitch_deg, roll_deg, pivot_z=0.8, thickness=0.025):
         [-height / 2, width / 2, 0],
     ])
     polygons.append(frame)
-    colors.append("#475569")  # Gris aluminio/marco
+    colors.append("#475569")
 
     # 3. CELDAS SOLARES (Frontales sobrepuestas)
     cell_h = (height - 2 * margin - (rows - 1) * gap) / rows
@@ -82,7 +81,7 @@ def build_detailed_panel(pitch_deg, roll_deg, pivot_z=0.8, thickness=0.025):
                 [x0, y0 + cell_w, 0.005],
             ])
             polygons.append(cell)
-            colors.append("#2563eb")  # Azul fotovoltaico brillante
+            colors.append("#2563eb")
 
     # MATRICES DE ROTACIÓN
     Rx = np.array([
@@ -97,7 +96,6 @@ def build_detailed_panel(pitch_deg, roll_deg, pivot_z=0.8, thickness=0.025):
     ])
     R = Ry @ Rx
 
-    # Aplicar rotación y elevación Z a todos los componentes
     rotated_polygons = []
     for poly in polygons:
         rotated = (R @ poly.T).T
@@ -276,7 +274,6 @@ class SolarDashboard(ctk.CTk):
         self.plot_frame.grid(row=1, column=0, sticky="nsew")
 
         plt.style.use("dark_background")
-        # Figura principal dividida (3D a la izquierda, 2D a la derecha)
         self.fig = plt.figure(figsize=(12, 6), facecolor="#242424")
         self.ax_3d = self.fig.add_subplot(1, 2, 1, projection="3d")
         self.ax_pitch = self.fig.add_subplot(2, 2, 2)
@@ -323,7 +320,6 @@ class SolarDashboard(ctk.CTk):
         self.ax_3d.set_ylim([-r, r])
         self.ax_3d.set_zlim([0, r])
 
-        # --- BRÚJULA BASE ---
         theta = np.linspace(0, 2 * np.pi, 120)
         self.ax_3d.plot(
             1.8 * np.cos(theta),
@@ -354,66 +350,55 @@ class SolarDashboard(ctk.CTk):
                         linewidth=1.5)
 
         offset = 2.0
-        self.ax_3d.text(
-            offset,
-            0,
-            0,
-            "ESTE",
-            color="#38bdf8",
-            fontsize=9,
-            fontweight="bold",
-            ha="center",
-            va="center",
-        )
-        self.ax_3d.text(
-            -offset,
-            0,
-            0,
-            "OESTE",
-            color="#38bdf8",
-            fontsize=9,
-            fontweight="bold",
-            ha="center",
-            va="center",
-        )
-        self.ax_3d.text(
-            0,
-            offset,
-            0,
-            "NORTE",
-            color="#38bdf8",
-            fontsize=9,
-            fontweight="bold",
-            ha="center",
-            va="center",
-        )
-        self.ax_3d.text(
-            0,
-            -offset,
-            0,
-            "SUR",
-            color="#38bdf8",
-            fontsize=9,
-            fontweight="bold",
-            ha="center",
-            va="center",
-        )
+        self.ax_3d.text(offset,
+                        0,
+                        0,
+                        "ESTE",
+                        color="#38bdf8",
+                        fontsize=9,
+                        fontweight="bold",
+                        ha="center",
+                        va="center")
+        self.ax_3d.text(-offset,
+                        0,
+                        0,
+                        "OESTE",
+                        color="#38bdf8",
+                        fontsize=9,
+                        fontweight="bold",
+                        ha="center",
+                        va="center")
+        self.ax_3d.text(0,
+                        offset,
+                        0,
+                        "NORTE",
+                        color="#38bdf8",
+                        fontsize=9,
+                        fontweight="bold",
+                        ha="center",
+                        va="center")
+        self.ax_3d.text(0,
+                        -offset,
+                        0,
+                        "SUR",
+                        color="#38bdf8",
+                        fontsize=9,
+                        fontweight="bold",
+                        ha="center",
+                        va="center")
 
-        # HUD en 3D
-        self.hud_text = self.ax_3d.text2D(
-            0.02,
-            0.95,
-            "",
-            transform=self.ax_3d.transAxes,
-            fontsize=9,
-            bbox={
-                "boxstyle": "round",
-                "facecolor": "black",
-                "alpha": 0.6
-            },
-            color="white",
-            verticalalignment="top",
-        )
+        self.hud_text = self.ax_3d.text2D(0.02,
+                                          0.95,
+                                          "",
+                                          transform=self.ax_3d.transAxes,
+                                          fontsize=9,
+                                          bbox={
+                                              "boxstyle": "round",
+                                              "facecolor": "black",
+                                              "alpha": 0.6
+                                          },
+                                          color="white",
+                                          verticalalignment="top")
 
         self.canvas.draw()
 
@@ -428,9 +413,20 @@ class SolarDashboard(ctk.CTk):
         except ValueError:
             return False
 
+        self.start_dt = start_dt
         self.times = [
             start_dt + timedelta(minutes=i) for i in range(int(hrs * 60))
         ]
+
+        # --- FIX: horas transcurridas desde el inicio (SIEMPRE creciente) ---
+        # Antes se usaba t.hour + t.minute/60 (hora de reloj), que se reinicia
+        # a 0 cada vez que la simulación cruza la medianoche. Eso rompía el
+        # orden del eje X y producía picos/zigzags en las gráficas de pitch
+        # y roll. Con tiempo transcurrido, el eje X es monótono por
+        # construcción sin importar cuántos días abarque la simulación.
+        self.hours = [(t - start_dt).total_seconds() / 3600.0
+                      for t in self.times]
+
         self.azimuths, self.elevations, self.pitches, self.rolls = [], [], [], []
 
         for t in self.times:
@@ -470,6 +466,7 @@ class SolarDashboard(ctk.CTk):
         self.btn_simulate.configure(text="▶ Iniciar Render",
                                     fg_color="#10b981")
         self.times = []
+        self.hours = []
         self.init_plot()
         for label in [
                 self.lbl_time_val,
@@ -484,8 +481,9 @@ class SolarDashboard(ctk.CTk):
         self.init_plot()
         self.pivot_z = 0.8
 
-        # Configurar Gráficas 2D de Ángulos
-        hours = [t.hour + t.minute / 60.0 for t in self.times]
+        # --- FIX: usar self.hours (tiempo transcurrido) en vez de
+        # t.hour + t.minute/60 (hora de reloj, no monótona) ---
+        hours = self.hours
         self.ax_pitch.plot(hours, self.pitches, color="#ef4444", linewidth=1.5)
         self.ax_pitch.set_ylabel("Pitch φ (°)", fontsize=8)
         self.ax_pitch.grid(True, alpha=0.3)
@@ -494,7 +492,7 @@ class SolarDashboard(ctk.CTk):
                                 color="white")
 
         self.ax_roll.plot(hours, self.rolls, color="#38bdf8", linewidth=1.5)
-        self.ax_roll.set_xlabel("Hora Local (h)", fontsize=8)
+        self.ax_roll.set_xlabel("Horas desde el inicio (h)", fontsize=8)
         self.ax_roll.set_ylabel("Roll ψ (°)", fontsize=8)
         self.ax_roll.grid(True, alpha=0.3)
         self.ax_roll.set_title("Ángulo Roll vs. Hora",
@@ -510,7 +508,6 @@ class SolarDashboard(ctk.CTk):
                                            linestyle="--",
                                            alpha=0.8)
 
-        # Objetos 3D
         self.ax_3d.plot([0, 0], [0, 0], [0, self.pivot_z],
                         color="#94a3b8",
                         linewidth=6)
@@ -560,10 +557,8 @@ class SolarDashboard(ctk.CTk):
                                                    markersize=8,
                                                    alpha=0.6)
 
-        # Vector Normal del Panel (n̂)
         self.normal_quiver = None
 
-        # Arco de Trayectoria
         sx = (1.7 * np.cos(np.radians(self.elevations)) *
               np.sin(np.radians(self.azimuths)))
         sy = (1.7 * np.cos(np.radians(self.elevations)) *
@@ -589,13 +584,17 @@ class SolarDashboard(ctk.CTk):
         i = self.frame_index
         el = self.elevations[i]
         curr_time = self.times[i]
-        curr_hour = curr_time.hour + curr_time.minute / 60.0
+
+        # --- FIX: usar self.hours[i] (tiempo transcurrido) en vez de
+        # curr_time.hour + curr_time.minute/60 (hora de reloj) para que
+        # la línea vertical coincida con el eje X ya corregido ---
+        curr_hour = self.hours[i]
+
         self.progress_bar.set((i + 1) / len(self.times))
 
         if el > 0:
             az, pitch, roll = self.azimuths[i], self.pitches[i], self.rolls[i]
 
-            # Telemetría UI
             time_str = curr_time.strftime("%H:%M")
             self.lbl_time_val.configure(text=time_str)
             self.lbl_el_val.configure(text=f"{el:.1f}°")
@@ -603,17 +602,14 @@ class SolarDashboard(ctk.CTk):
             self.lbl_pitch_val.configure(text=f"{pitch:.1f}°")
             self.lbl_roll_val.configure(text=f"{roll:.1f}°")
 
-            # Actualizar líneas verticales 2D
             self.line_p.set_xdata([curr_hour, curr_hour])
             self.line_r.set_xdata([curr_hour, curr_hour])
 
-            # Coordenadas del Sol
             R_sun = 1.7
             sx = R_sun * np.cos(np.radians(el)) * np.sin(np.radians(az))
             sy = R_sun * np.cos(np.radians(el)) * np.cos(np.radians(az))
             sz = R_sun * np.sin(np.radians(el))
 
-            # Actualizar Sol
             self.sun_core.set_data([sx], [sy])
             self.sun_core.set_3d_properties([sz])
             self.sun_glow.set_data([sx], [sy])
@@ -626,7 +622,6 @@ class SolarDashboard(ctk.CTk):
             self.sun_ground_mark.set_data([sx], [sy])
             self.sun_ground_mark.set_3d_properties([0])
 
-            # Actualizar Panel y Sombra
             polys, _ = build_detailed_panel(pitch, roll, self.pivot_z)
             self.panel_collection.set_verts(polys)
 
@@ -635,7 +630,6 @@ class SolarDashboard(ctk.CTk):
             alpha_shadow = max(0, 0.5 * (el / 10.0)) if el < 10 else 0.5
             self.shadow_collection.set_alpha(alpha_shadow)
 
-            # --- DIBUJAR VECTOR NORMAL (n̂) ---
             if self.normal_quiver:
                 self.normal_quiver.remove()
 
@@ -652,19 +646,16 @@ class SolarDashboard(ctk.CTk):
             ])
             n_vec = Ry @ Rx @ np.array([0, 0, 1])
 
-            self.normal_quiver = self.ax_3d.quiver(
-                0,
-                0,
-                self.pivot_z,
-                n_vec[0] * 0.8,
-                n_vec[1] * 0.8,
-                n_vec[2] * 0.8,
-                color="#06b6d4",
-                linewidth=2,
-                arrow_length_ratio=0.25,
-            )
+            self.normal_quiver = self.ax_3d.quiver(0,
+                                                   0,
+                                                   self.pivot_z,
+                                                   n_vec[0] * 0.8,
+                                                   n_vec[1] * 0.8,
+                                                   n_vec[2] * 0.8,
+                                                   color="#06b6d4",
+                                                   linewidth=2,
+                                                   arrow_length_ratio=0.25)
 
-            # HUD 3D
             self.hud_text.set_text(
                 f"Hora: {time_str}\n"
                 f"Sol   → Elev: {el:.1f}° | Az: {az:.1f}°\n"
